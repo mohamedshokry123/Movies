@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل الفيلم</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <!-- قسم الصورة والمعلومات -->
+    <div class="movie-header">
+      <div class="movie-poster">
+        <img id="movie-poster" src="" alt="ملصق الفيلم">
+      </div>
+      <div class="movie-details">
+        <h1 id="movie-title">عنوان الفيلم</h1>
+        <p id="movie-tagline" class="tagline">الشعار</p>
+        <div class="rating">
+          <span id="movie-rating">8.5</span>/10
+        </div>
+        <p id="movie-overview">وصف الفيلم</p>
+        <p><strong>تاريخ الإصدار:</strong> <span id="movie-release-date">2023-05-20</span></p>
+        <!-- قسم التقييم -->
+        <div class="star-rating" id="star-rating">
+          <i class="fa fa-star" data-value="1"></i>
+          <i class="fa fa-star" data-value="2"></i>
+          <i class="fa fa-star" data-value="3"></i>
+          <i class="fa fa-star" data-value="4"></i>
+          <i class="fa fa-star" data-value="5"></i>
+        </div>
+        <p id="user-rating">تقييمك: 0 من 5</p>
+        <!-- قسم الأيقونات التفاعلية -->
+        <div class="interactive-icons">
+          <i class="fa-solid fa-thumbs-up" id="like-btn" title="أعجبني"></i>
+          <i class="fa-solid fa-thumbs-down" id="dislike-btn" title="لم يعجبني"></i>
+          <i class="fa-solid fa-heart" id="favorite-btn" title="إضافة إلى المفضلة"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- قسم المقطع الدعائي -->
+    <div class="movie-trailer">
+      <h2>المقطع الدعائي</h2>
+      <div id="trailer-container"></div>
+    </div>
+  </div>
+
+  <script>
+    // جلب معرف الفيلم من URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('id');
+
+    // API Key and Base URL
+    const API_KEY = '5ee7e09b085428bf8b8997a13b26ded2';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+
+    // دالة لجلب تفاصيل الفيلم
+    function getMovieDetails() {
+      fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}`)
+        .then(res => res.json())
+        .then(movie => {
+          document.getElementById('movie-title').innerText = movie.title;
+          document.getElementById('movie-poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+          document.getElementById('movie-tagline').innerText = movie.tagline;
+          document.getElementById('movie-rating').innerText = movie.vote_average;
+          document.getElementById('movie-overview').innerText = movie.overview;
+          document.getElementById('movie-release-date').innerText = movie.release_date;
+        })
+        .catch(error => console.error('خطأ:', error));
+    }
+
+    // دالة لجلب الفيديو
+    function getMovieTrailer() {
+      fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+          const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+          if (trailer) {
+            document.getElementById('trailer-container').innerHTML = `
+              <iframe width="100%" height="500" src="https://www.youtube.com/embed/${trailer.key}" frameborder="0" allowfullscreen></iframe>
+            `;
+          }
+        })
+        .catch(error => console.error('خطأ:', error));
+    }
+
+   // تفاعل مع الأيقونات
+document.addEventListener('DOMContentLoaded', () => {
+  const icons = document.querySelectorAll('.interactive-icons i');
+
+  icons.forEach(icon => {
+    icon.addEventListener('click', () => {
+      // إزالة التفعيل عن جميع الأيقونات
+      icons.forEach(i => i.classList.remove('active'));
+
+      // تفعيل الأيقونة المختارة فقط
+      icon.classList.add('active');
+
+      // رسائل تفاعل لكل أيقونة
+      if (icon.id === 'like-btn') {
+        alert('لقد أعجبك هذا الفيلم!');
+      } else if (icon.id === 'dislike-btn') {
+        alert('لم يعجبك هذا الفيلم!');
+      } else if (icon.id === 'favorite-btn') {
+        alert('تمت إضافة الفيلم إلى المفضلة!');
+      }
+    });
+  });
+
+  // تفاعل مع التقييم بالنجوم
+  const stars = document.querySelectorAll('.star-rating .fa-star');
+  const userRatingDisplay = document.getElementById('user-rating');
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      stars.forEach(s => s.classList.remove('selected'));
+      star.classList.add('selected');
+      let rating = star.getAttribute('data-value');
+      userRatingDisplay.innerText = `تقييمك: ${rating} من 5`;
+      stars.forEach(s => {
+        if (s.getAttribute('data-value') <= rating) {
+          s.classList.add('selected');
+        }
+      });
+    });
+  });
+});
+
+
+    // استدعاء الدوال
+    getMovieDetails();
+    getMovieTrailer();
+  </script>
+</body>
+</html>
